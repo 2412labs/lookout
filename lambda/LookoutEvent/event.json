@@ -1,0 +1,24 @@
+{
+  "eventId": "t-generate",
+  "s3Key": "testdata/mailman.jpg",
+  "thingName": "lo-iot-cam1",
+  "captureSizeW": 560,
+  "direction": {
+    "direction": "SE",
+    "dx": 10,
+    "dy": 50
+    },
+  "motionSizeH": 420,
+  "eventTime": 1506976560,
+  "originalBoundingBox": {
+    "Width": 0,
+    "Top": 0,
+    "Left": 0,
+    "Height": 0,
+    "CenterX": 0,
+    "CenterY": 0
+  },
+  "motionSizeW": 560,
+  "motionContourArea": 1,
+  "captureSizeH": 420
+}

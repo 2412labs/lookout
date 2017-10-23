@@ -1,0 +1,300 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Lookout application stack
+
+Parameters:
+  IotNotifyTopic:
+    Description: The topic to publish notification events to
+    Type: String
+    Default: lo/notify
+  IotEventTopic:
+    Description: The topic that lamdbda subscribe to for motion events
+    Type: String
+    Default: lo/event
+  IotEventEndTopic:
+    Description: The topic that lamdbda subscribe to for motion events
+    Type: String
+    Default: lo/event/end
+  RekImageCollection:
+    Description: The rek collection to use for matching and indexing faces
+    Type: String
+    Default: lookout
+
+Resources:
+
+  ############################################################################
+  # Lambda functions
+  ############################################################################
+
+  LookoutEndEvent:
+    DependsOn: LambdaRole
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: LookoutEndEvent
+      Description: process undetected faces on ended events
+      CodeUri: lambda
+      Handler: LookoutEndEvent.main.handler
+      Runtime: python3.6
+      Timeout: 30
+      MemorySize: 512
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          FACES_TABLE: !Ref LookoutFacesTable
+          NOTIFY_TABLE: !Ref LookoutNotifyTable
+          S3_BUCKET: !Ref S3Bucket
+          REK_COLLECTION: !Ref RekImageCollection
+          IOT_NOTIFY_TOPIC: !Ref IotNotifyTopic
+
+  LookoutEvent:
+    DependsOn: LambdaRole
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: LookoutEvent
+      Description: process active event
+      CodeUri: lambda
+      Handler: LookoutEvent.main.handler
+      Runtime: python3.6
+      Timeout: 30
+      MemorySize: 512
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          FACES_TABLE: !Ref LookoutFacesTable
+          NOTIFY_TABLE: !Ref LookoutNotifyTable
+          S3_BUCKET: !Ref S3Bucket
+          REK_COLLECTION: !Ref RekImageCollection
+          IOT_NOTIFY_TOPIC: !Ref IotNotifyTopic
+
+
+
+
+
+  ############################################################################
+  # DynamoDb tables
+  ############################################################################
+
+  LookoutNotifyTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: id
+          AttributeType: S
+      KeySchema:
+        -
+          AttributeName: id
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expires
+        Enabled: True
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+
+  LookoutFacesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: faceId
+          AttributeType: S
+      KeySchema:
+        -
+          AttributeName: faceId
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+
+
+
+
+  ############################################################################
+  # s3 bucket for file processing
+  ############################################################################
+
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: "Private"
+      LifecycleConfiguration:
+        Rules:
+          -
+            ExpirationInDays: 1
+            Id: "expire images after 1 day"
+            Prefix: "images/"
+            Status: "Enabled"
+      VersioningConfiguration:
+        Status: "Suspended"
+
+
+
+
+  ############################################################################
+  # IOT - actual device creation is not performed in the template
+  # as it depends on actual device and certification implemenation
+  # of the user
+  ############################################################################
+
+  # create a policy for the things
+  IotThingPolicy:
+    Type: "AWS::IoT::Policy"
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Allow
+          Action:
+            - "iot:*"
+            - "greengrass:*"
+          Resource:
+            - "*"
+
+  # create a rule to push topic to lambda
+  IotEventToLambda:
+    Type: "AWS::IoT::TopicRule"
+    Properties:
+      TopicRulePayload:
+        Actions:
+          -
+            Lambda:
+              FunctionArn: !GetAtt LookoutEvent.Arn
+        Description: "pass motion events to lambda"
+        RuleDisabled: False
+        Sql: !Sub "SELECT * FROM '${IotEventTopic}'"
+
+  IotEventToLambda2:
+    Type: "AWS::IoT::TopicRule"
+    Properties:
+      TopicRulePayload:
+        Actions:
+          -
+            Lambda:
+              FunctionArn: !GetAtt LookoutEndEvent.Arn
+        Description: "signal event end to lambda"
+        RuleDisabled: False
+        Sql: !Sub "SELECT * FROM '${IotEventEndTopic}'"
+
+  # create permissions to allow lambda invocation
+  IotToLambaPerm1:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref LookoutEvent
+      Principal: 'iot.amazonaws.com'
+
+  IotToLambaPerm2:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref LookoutEndEvent
+      Principal: 'iot.amazonaws.com'
+
+
+  ############################################################################
+  # IAM Roles & Policies
+  ############################################################################
+
+  LambdaRole:
+    Type: AWS::IAM::Role
+    DependsOn: LambdaPolicy
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+            Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - !Ref LambdaPolicy
+
+  LambdaPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - "logs:CreateLogGroup"
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
+            Resource:
+              - "arn:aws:logs:*:*:*"
+          - Effect: Allow
+            Action:
+              - 'dynamodb:BatchGetItem'
+              - 'dynamodb:BatchWriteItem'
+              - 'dynamodb:DeleteItem'
+              - 'dynamodb:GetItem'
+              - 'dynamodb:GetRecords'
+              - 'dynamodb:GetShardIterator'
+              - 'dynamodb:ListStreams'
+              - 'dynamodb:ListTables'
+              - 'dynamodb:PutItem'
+              - 'dynamodb:Query'
+              - 'dynamodb:Scan'
+              - 'dynamodb:UpdateItem'
+            Resource:
+              - !GetAtt LookoutFacesTable.Arn
+              - !GetAtt LookoutNotifyTable.Arn
+          - Effect: Allow
+            Action:
+              - 's3:GetObject'
+              - 's3:PutObject'
+              - 's3:ListBucket'
+            Resource:
+              - !Sub "${S3Bucket.Arn}/*"
+          - Effect: Allow
+            Action:
+              - "rekognition:CompareFaces"
+              - "rekognition:DetectFaces"
+              - "rekognition:DetectLabels"
+              - "rekognition:ListCollections"
+              - "rekognition:ListFaces"
+              - "rekognition:SearchFaces"
+              - "rekognition:SearchFacesByImage"
+            Resource:
+              - "*"
+          - Effect: Allow
+            Action:
+              - "rekognition:CreateCollection"
+              - "rekognition:DeleteCollection"
+              - "rekognition:DeleteFaces"
+              - "rekognition:IndexFaces"
+            Resource:
+              - !Sub "arn:aws:rekognition:${AWS::Region}:${AWS::AccountId}:collection/${RekImageCollection}"
+          - Effect: Allow
+            Action:
+              - 'iot:Publish'
+              - 'iot:Receive'
+              - 'iot:Subscribe'
+            Resource:
+              - !Sub "arn:aws:iot:${AWS::Region}:${AWS::AccountId}:topic/${IotNotifyTopic}"
+              - !Sub "arn:aws:iot:${AWS::Region}:${AWS::AccountId}:topic/${IotEventTopic}"
+              - !Sub "arn:aws:iot:${AWS::Region}:${AWS::AccountId}:topic/${IotEventEndTopic}"
+
+Outputs:
+  S3BucketName:
+    Value: !Ref S3Bucket
+    Description: The s3 bucket used to process images
+  FacesTableName:
+    Value: !Ref LookoutFacesTable
+    Description: Table name for faces table
+  NotifyTableName:
+    Value: !Ref LookoutNotifyTable
+    Description: Table name for notification table
+  NotifyTopic:
+    Value: !Ref IotNotifyTopic
+    Description: Topic to pubish notifications to
+  EventTopic:
+    Value: !Ref IotEventTopic
+    Description: Topic to susbscribe to for motion events
+  EventEndTopic:
+    Value: !Ref IotEventEndTopic
+    Description: Topic to susbscribe to for motion events
+  RekCollection:
+    Value: !Ref RekImageCollection
+    Description: The rekognition collection name used for searching and indexing faces

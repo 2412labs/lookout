@@ -1,0 +1,14 @@
+{
+  "iotConfig": {
+    "region": "us-east-1",
+    "thingName": "lo-iot-cam1",
+    "iotHost": "YOUR_IOT_HOST.iot.us-east-1.amazonaws.com",
+    "iotPort": 8883,
+    "rootCert": "certs/root.pem",
+    "thingCert": "certs/cert.pem",
+    "thingPrivateKey": "certs/private.key"
+  },
+  "s3Bucket": "lookout-stack-s3bucket-YOUR_BUCKET_ID",
+  "deviceTopic": "lo/lo-iot-cam1",
+  "eventTopic": "lo/event"
+}

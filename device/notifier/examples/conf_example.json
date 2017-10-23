@@ -1,0 +1,13 @@
+{
+  "iotConfig": {
+    "region": "us-east-1",
+    "thingName": "iot-api-IotThing-YOUR_THING_NAME",
+    "iotHost": "YOUR_IOT_HOST.iot.us-east-1.amazonaws.com",
+    "iotPort": 8883,
+    "rootCert": "certs/root.pem",
+    "thingCert": "certs/cert.pem",
+    "thingPrivateKey": "certs/private.key"
+  },
+  "pollyVoiceId": "Joey",
+  "notifyTopic": "lo/notify"
+}
