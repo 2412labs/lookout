@@ -1,6 +1,6 @@
 {
   "eventId": "t-generate",
-  "s3Key": "testdata/mailman.jpg",
+  "s3Key": "testimages/mailman_gray.jpg",
   "thingName": "lo-iot-cam1",
   "captureSizeW": 560,
   "direction": {

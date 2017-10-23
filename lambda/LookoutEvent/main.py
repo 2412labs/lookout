@@ -37,6 +37,7 @@ def handler(event, context):
         person = lh.hasPersonLabels(labels)
         car = lh.hasVehicleLabels(labels)
         if person or car:
+            print("labels found: {}".format(labels))
             notify = notifyLabels(event, labels, person, car)
 
     if notify is not None and notify['has_person']['BOOL'] == True:
@@ -56,6 +57,7 @@ def detectFaces(event):
         if theFace is None:
             print("error, faces found in collection do not have dbynamodb record: {}".format(faceMatches))
             return
+        print("face found: {}".format(theFace))
         return notifyFaces(event, theFace)
 
     # add the detected face to the unsub list for this event

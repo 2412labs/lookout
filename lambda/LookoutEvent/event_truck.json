@@ -1,6 +1,6 @@
 {
-  "eventId": "t-47238599",
-  "s3Key": "testimages/mailman_gray",
+  "eventId": "t-generate",
+  "s3Key": "testimages/truck_gray.jpg",
   "thingName": "lo-iot-cam1",
   "captureSizeW": 560,
   "direction": {
