@@ -49,7 +49,7 @@ def getCrop(box, npimg, h, w):
 
 	if boxw < 80 or boxh < 80:
 		_logger.debug("increasing crop to 80x80")
-		increaseBy = 80-boxw
+		increaseBy = 81-boxw
 		boxw = boxw + increaseBy
 		boxh = boxh + increaseBy
 		left = left-int(increaseBy/2)

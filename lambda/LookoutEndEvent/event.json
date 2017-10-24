@@ -1,24 +1,3 @@
 {
-  "eventId": "t-47238599",
-  "s3Key": "img/test/mailman_gray",
-  "thingName": "lo-iot-cam1",
-  "captureSizeW": 560,
-  "direction": {
-    "direction": "SE",
-    "dx": 10,
-    "dy": 50
-    },
-  "motionSizeH": 420,
-  "eventTime": 1506976560,
-  "originalBoundingBox": {
-    "Width": 0,
-    "Top": 0,
-    "Left": 0,
-    "Height": 0,
-    "CenterX": 0,
-    "CenterY": 0
-  },
-  "motionSizeW": 560,
-  "motionContourArea": 1,
-  "captureSizeH": 420
+  "eventId": "t-9a6b55e2"
 }

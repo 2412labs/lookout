@@ -64,24 +64,16 @@ class LookoutHelper:
 	def _rekGetFaceDetails(self, request):
 		return self.bh.rekognition.detect_faces(Image=request)['FaceDetails']
 
-	def rekSearchFacesByImage(self, collectionId, imgData=None, s3Bucket=None, s3Key=None):
+	def rekSearchFacesByImage(self, collectionId, s3Bucket=None, s3Key=None):
 		try:
-			img = None
-			if s3Bucket and s3Key:
-				img = {
+			return self.bh.rekognition.search_faces_by_image(
+				CollectionId=collectionId,
+				Image={
 			        'S3Object': {
 			            'Bucket': s3Bucket,
 			            'Name': s3Key
 			        }
-				}
-			else:
-				img = {
-					'Bytes': imgData
-				}
-
-			return self.bh.rekognition.search_faces_by_image(
-				CollectionId=collectionId,
-				Image=img,
+				},
 				MaxFaces=1,
 				FaceMatchThreshold=80
 			)
@@ -97,27 +89,23 @@ class LookoutHelper:
 				raise e
 
 	def rekIndexFace(self, collectionId, imgData=None, bucket=None, key=None):
-		img = None
-
-		if bucket and key:
-			img = {
-				'S3Object': {
-					'Bucket': bucket,
-					'Name': key
+		if imgData is None:
+			return self.bh.rekognition.index_faces(
+				CollectionId=collectionId,
+				Image={
+					'S3Object': {
+						'Bucket': bucket,
+						'Name': key
+					}
 				}
-			}
-		elif imgData:
-			img = {
+			)['FaceRecords']
+
+		return self.bh.rekognition.index_faces(
+			CollectionId=collectionId,
+			Image={
 				'Bytes': imgData
 			}
-		else:
-			raise Exception("must supply imgData, or bucket + key parameters")
-
-		response = self.bh.rekognition.index_faces(
-			CollectionId=collectionId,
-			Image=img
-		)
-		return response['FaceRecords']
+		)['FaceRecords']
 
 	def rekCreateCollection(self, collectionId):
 		response = self.bh.rekognition.create_collection(

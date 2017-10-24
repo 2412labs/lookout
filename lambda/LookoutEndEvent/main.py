@@ -47,7 +47,7 @@ def handler(event, context):
     theUnsub = [max(unsubs, key= lambda x: x['faceArea'])][0]
 
     # search faces in case this face has already been indexed
-    matches = lh.rekSearchFacesByImage(REK_COLLECTION, s3Bucket=S3_BUCKET, s3Key=event['s3Key'])
+    matches = lh.rekSearchFacesByImage(REK_COLLECTION, s3Bucket=S3_BUCKET, s3Key=theUnsub['eventImageKey'])
     if len(matches['FaceMatches']) > 0:
         print("aborting, face {} has already been indexed".format(matches['FaceMatches'][0]['Face']['FaceId']))
         return
@@ -57,12 +57,12 @@ def handler(event, context):
         return
 
     # if not found, index the face, create faces record, save face to s3
-    imgBytes = lh.s3GetFileBody(S3_BUCKET, event['s3Key'], 'image/jpeg')
+    imgBytes = lh.s3GetFileBody(S3_BUCKET, theUnsub['eventImageKey'], 'image/jpeg')
 
-    indexFace(event, imgBytes, matches['SearchedFaceBoundingBox'])
+    indexFace(imgBytes, matches['SearchedFaceBoundingBox'])
 
 
-def indexFace(event, imgBytes, box):
+def indexFace(imgBytes, box):
     npimg = iu.getNpImgFromBytesOrString(imgBytes)
     crop = iu.cropFromBoundingBox(npimg, box)
 
@@ -71,7 +71,8 @@ def indexFace(event, imgBytes, box):
         return
 
     img = iu.np2bytes(crop)
-    faceRecords = lh.rekIndexFace(REK_COLLECTION, img)
+
+    faceRecords = lh.rekIndexFace(REK_COLLECTION, imgData=img)
 
     if len(faceRecords) == 0:
         print("aborting, face index failed")
