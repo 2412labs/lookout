@@ -61,6 +61,7 @@ def handler(event, context):
 
     indexFace(event, imgBytes, matches['SearchedFaceBoundingBox'])
 
+
 def indexFace(event, imgBytes, box):
     npimg = iu.getNpImgFromBytesOrString(imgBytes)
     crop = iu.cropFromBoundingBox(npimg, box)
@@ -87,12 +88,12 @@ def indexFace(event, imgBytes, box):
         key,
         name="unsub{0}".format(str(uuid.uuid4())[:8])
     )
-    lh.dynPutItem(faceItem, facesTable, 'attribute_not_exists(faceId)')
+    lh.dynPutItem(faceItem, FACES_TABLE, 'attribute_not_exists(faceId)')
 
 def buildDynamoFacesItem(faceId, s3Bucket, s3Key, name):
     return {
         'faceId': { 'S': faceId, },
-        'rekCollection': { 'S': collectionId },
+        'rekCollection': { 'S': REK_COLLECTION },
         's3Bucket': { 'S': s3Bucket, },
         's3Key': { 'S': s3Key, },
         'name': { 'S': name, },

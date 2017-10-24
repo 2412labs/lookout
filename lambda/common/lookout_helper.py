@@ -93,14 +93,29 @@ class LookoutHelper:
 			elif e.response['Error']['Code'] == 'InvalidParameterException':
 				return None
 			else:
+
 				raise e
 
-	def rekIndexFace(self, collectionId, imgData):
-		response = self.bh.rekognition.index_faces(
-			CollectionId=collectionId,
-			Image={
+	def rekIndexFace(self, collectionId, imgData=None, bucket=None, key=None):
+		img = None
+
+		if bucket and key:
+			img = {
+				'S3Object': {
+					'Bucket': bucket,
+					'Name': key
+				}
+			}
+		elif imgData:
+			img = {
 				'Bytes': imgData
 			}
+		else:
+			raise Exception("must supply imgData, or bucket + key parameters")
+
+		response = self.bh.rekognition.index_faces(
+			CollectionId=collectionId,
+			Image=img
 		)
 		return response['FaceRecords']
 

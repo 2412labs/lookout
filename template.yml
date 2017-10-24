@@ -19,6 +19,10 @@ Parameters:
     Description: The rek collection to use for matching and indexing faces
     Type: String
     Default: lookout
+  S3KnownFacePath:
+    Description: The path in s3 that holds known faces for indexing
+    Type: String
+    Default: img/faces
 
 Resources:
 
@@ -30,7 +34,6 @@ Resources:
     DependsOn: LambdaRole
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: LookoutEndEvent
       Description: process undetected faces on ended events
       CodeUri: lambda
       Handler: LookoutEndEvent.main.handler
@@ -50,7 +53,6 @@ Resources:
     DependsOn: LambdaRole
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: LookoutEvent
       Description: process active event
       CodeUri: lambda
       Handler: LookoutEvent.main.handler
@@ -66,8 +68,25 @@ Resources:
           REK_COLLECTION: !Ref RekImageCollection
           IOT_NOTIFY_TOPIC: !Ref IotNotifyTopic
 
-
-
+  LookoutIndexFaces:
+    DependsOn: LambdaRole
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: index known faces from s3
+      CodeUri: lambda
+      Handler: LookoutIndexFaces.main.handler
+      Runtime: python3.6
+      Timeout: 30
+      MemorySize: 512
+      Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          S3_FACE_PATH: !Ref S3KnownFacePath
+          FACES_TABLE: !Ref LookoutFacesTable
+          NOTIFY_TABLE: !Ref LookoutNotifyTable
+          S3_BUCKET: !Ref S3Bucket
+          REK_COLLECTION: !Ref RekImageCollection
+          IOT_NOTIFY_TOPIC: !Ref IotNotifyTopic
 
 
   ############################################################################
@@ -245,8 +264,10 @@ Resources:
               - 's3:GetObject'
               - 's3:PutObject'
               - 's3:ListBucket'
+              - 's3:ListObjects'
             Resource:
               - !Sub "${S3Bucket.Arn}/*"
+              - !GetAtt S3Bucket.Arn
           - Effect: Allow
             Action:
               - "rekognition:CompareFaces"
@@ -256,6 +277,7 @@ Resources:
               - "rekognition:ListFaces"
               - "rekognition:SearchFaces"
               - "rekognition:SearchFacesByImage"
+              - "rekognition:IndexFaces"
             Resource:
               - "*"
           - Effect: Allow
@@ -298,3 +320,12 @@ Outputs:
   RekCollection:
     Value: !Ref RekImageCollection
     Description: The rekognition collection name used for searching and indexing faces
+  EndEventLambda:
+    Value: !Ref LookoutEndEvent
+    Description: The lambda invoked at the end of a motion event
+  EventLambda:
+    Value: !Ref LookoutEvent
+    Description: The lambda invoked for each moving object during a motion event
+  IndexFaces:
+    Value: !Ref LookoutIndexFaces
+    Description: A lambda method that can be manually invoked to index faces in s3bucket/img/faces/
