@@ -69,13 +69,3 @@ do_deps:
 		install \
 		-t "lambda/common/" \
 		-r "lambda/common/requirements.txt"
-
-	# for i in $(shell find lambda -mindepth 1 -maxdepth 1 -type d); do \
-	# 	cd "$(BASE)/$$i"; \
-	# 	if [ -a "$(BASE)/$$i/requirements.txt" ]; then \
-	# 		"pip$(PY_VERSION)" \
-	# 			install \
-	# 			-t "$(BASE)/$$i/" \
-	# 			-r "$(BASE)/$$i/requirements.txt"; \
-	# 	fi; \
-	# done
