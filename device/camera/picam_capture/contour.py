@@ -25,4 +25,4 @@ class Contour:
 
 class ScaledBoundingBox:
     def __init__(self, x, y, w, h, scale):
-        (self.x,self.y,self.w,self.h,self.cx,self.cy) = (x*scale,y*scale,w*scale,h*scale,(w/2)*scale, (h/2)*scale)
+        (self.x,self.y,self.w,self.h,self.cx,self.cy) = (int(x*scale),int(y*scale),int(w*scale),int(h*scale),int((w/2)*scale), int((h/2)*scale))
