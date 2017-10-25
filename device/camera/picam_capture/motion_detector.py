@@ -72,16 +72,16 @@ class MotionDetector:
                 and self.ms.sendStreamCount <= 30 \
                 and self.ms.frameCount%self.fpsPer == 0):
 
-		direction = self.ms.getDirection()
+        		direction = self.ms.getDirection()
 
-		if direction != None:
-               		# crop hi resolution image to the area of motion
-               		crop = contours[0].cropFrame(data['i_large'], self.cam_scale)
+                if direction != None:
+                    # crop hi resolution image to the area of motion
+                    crop = contours[0].cropFrame(data['i_large'], self.cam_scale)
 
-               		# cropped image must have minimum of 80x80
-               		if crop.shape[0] > 80 and crop.shape[1] > 80:
-				self.ms.sendStreamCount += 1
-				self.push_img(crop, data['i_large'].shape, contours[0], direction)
+                    # cropped image must have minimum of 80x80
+                    if crop.shape[0] > 80 and crop.shape[1] > 80:
+                        self.ms.sendStreamCount += 1
+                        self.push_img(crop, data['i_large'].shape, contours[0], direction)
         else:
             motion_ended = self.ms.processNonMotionFrame()
 
@@ -105,7 +105,7 @@ class MotionDetector:
         return {
             "imageNp": cv2.imencode('.jpg',img)[1],
             "imageName": "{}_{}.jpg".format(session, sequence),
-            "event": { 
+            "event": {
                 "eventId": session,
                 "eventTime": int(time.time()),
                 "direction": direction,
