@@ -72,7 +72,7 @@ class MotionDetector:
                 and self.ms.sendStreamCount <= 30 \
                 and self.ms.frameCount%self.fpsPer == 0):
 
-        		direction = self.ms.getDirection()
+                direction = self.ms.getDirection()
 
                 if direction != None:
                     # crop hi resolution image to the area of motion
