@@ -1,8 +1,8 @@
 from util.queue_worker import QueueWorker
-from rpi_image_processor import RpiImageProcessor
-from rpi_camera import RpiCamera
-from contour import Contour
-from motionstate import MotionState
+from .rpi_image_processor import RpiImageProcessor
+from .rpi_camera import RpiCamera
+from .contour import Contour
+from .motionstate import MotionState
 import cv2
 import numpy as np
 import time

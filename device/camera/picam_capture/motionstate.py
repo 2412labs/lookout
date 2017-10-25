@@ -1,4 +1,4 @@
-from motion_path import MotionPath
+from .motion_path import MotionPath
 import time
 import datetime
 import math
