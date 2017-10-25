@@ -6,7 +6,11 @@ import cv2
 import time
 import io
 import logging
-import Queue
+import sys
+if sys.version_info[0] >= 3:
+    import queue
+else:
+    import Queue as queue
 import traceback
 
 class RpiImageProcessor(object):
@@ -17,7 +21,7 @@ class RpiImageProcessor(object):
         self.q_out = q_img
         self.resize = resize
         self.maxlen=maxlen
-        self.q_in = Queue.Queue()
+        self.q_in = queue.Queue()
         self.workers = []
 
     def startWorkers(self):

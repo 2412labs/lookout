@@ -1,5 +1,9 @@
 from threading import Thread
-import Queue
+import sys
+if sys.version_info[0] >= 3:
+    import queue
+else:
+    import Queue as queue
 import logging
 import traceback
 
@@ -10,7 +14,7 @@ class QueueWorker:
         self.name = name
         self.dump = dumpThreshold
         self.warn = warnThreshold
-        self.q_in = Queue.Queue()
+        self.q_in = queue.Queue()
         self.targetMethod = targetMethod
         self.t = Thread(target=self._consume)
 

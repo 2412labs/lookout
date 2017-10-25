@@ -8,7 +8,10 @@ import io
 import traceback
 import simpleaudio as sa
 import logging
-import queue
+if sys.version_info[0] >= 3:
+    import queue
+else:
+    import Queue as queue
 import uuid
 
 class AwsIotNotifierThing:

@@ -3,7 +3,11 @@ from util.queue_worker import QueueWorker
 from picam_capture.motion_detector import MotionDetector
 from threading import Thread
 from datetime import datetime as dt
-import Queue
+import sys
+if sys.version_info[0] >= 3:
+    import queue
+else:
+    import Queue as queue
 import logging
 import json
 import time
@@ -20,7 +24,7 @@ class AwsIotCameraThing:
         self.sh = sendHelper
         self.stopped = False
         self.imageSendQueue = QueueWorker("image_send_queue", self.processImageSendQueue)
-        self.mqttQueue = Queue.Queue()
+        self.mqttQueue = queue.Queue()
         #(1600,1200), 2.5 (1400,1050)
         self.motionDetector = MotionDetector(
             self.imageSendQueue,
