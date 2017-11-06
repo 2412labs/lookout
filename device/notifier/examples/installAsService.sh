@@ -43,7 +43,7 @@ systemctl stop $SERVICE
 
 cat > /lib/systemd/system/$SERVICE <<ENDSERVICE
 [Unit]
-Description=Switchhub service
+Description=Notifier service
 After=multi-user.target
 
 [Service]
