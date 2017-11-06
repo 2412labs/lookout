@@ -8,6 +8,7 @@
     "thingCert": "certs/cert.pem",
     "thingPrivateKey": "certs/private.key"
   },
+  "directionFilter": [],
   "pollyVoiceId": "Joey",
   "notifyTopic": "lo/notify"
 }

@@ -12,7 +12,7 @@ conf = json.load(open(vars(ap.parse_args())["conf"]))
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] [%(name)s] [%(message)s]')
 logger = logging.getLogger(__name__)
 
-thing = AwsIotNotifierThing(conf["iotConfig"], conf['notifyTopic'], conf['pollyVoiceId'])
+thing = AwsIotNotifierThing(conf["iotConfig"], conf['notifyTopic'], conf['pollyVoiceId'], conf['directionFilter'])
 
 try:
     # this call is blocking

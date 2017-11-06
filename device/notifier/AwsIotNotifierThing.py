@@ -18,7 +18,7 @@ class AwsIotNotifierThing:
     _logger = logging.getLogger(__name__)
     DEFAULT_NAME = "Someone"
 
-    def __init__(self, iotConfig, notifyTopic, pollyVoiceId):
+    def __init__(self, iotConfig, notifyTopic, pollyVoiceId, directionFilter):
         (this_dir, this_filename) = os.path.split(__file__)
         self.chime = sa.WaveObject.from_wave_file("{}/audio/chime.wav".format(this_dir))
         (self.mqShadowClient, self.mqClient) = self.createMqttClients(iotConfig)
@@ -27,6 +27,7 @@ class AwsIotNotifierThing:
         self.notifyTopic = notifyTopic
         self.pollyVoiceId = pollyVoiceId
         self.polly = polly = boto3.client('polly', region_name=iotConfig["region"])
+        self.directionFilter = {d:1 for d in directionFilter}
         self.notifications = {}
         self.mqttQueue = queue.Queue()
         self.stopped = False
@@ -72,6 +73,11 @@ class AwsIotNotifierThing:
 
     def handleNotification(self, payload):
         try:
+            if len(self.directionFilter) > 0:
+                direction = payload['direction']['direction']
+                if direction not in self.directionFilter:
+                    return
+
             eventId = payload['eventId']
             has_person = payload['has_person']
             name = None
