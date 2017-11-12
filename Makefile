@@ -60,12 +60,3 @@ index:
 
 release:
 	@make package deploy outputs testdata index
-
-deps:
-	docker run -v $$PWD:/var/task -it lambci/lambda:build-python3.6 /bin/bash -c 'make do_deps'
-
-do_deps:
-	"pip$(PY_VERSION)" \
-		install \
-		-t "lambda/common/" \
-		-r "lambda/common/requirements.txt"

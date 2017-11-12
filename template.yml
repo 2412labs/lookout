@@ -11,10 +11,6 @@ Parameters:
     Description: The topic that lamdbda subscribe to for motion events
     Type: String
     Default: lo/event
-  IotEventEndTopic:
-    Description: The topic that lamdbda subscribe to for motion events
-    Type: String
-    Default: lo/event/end
   RekImageCollection:
     Description: The rek collection to use for matching and indexing faces
     Type: String
@@ -29,25 +25,6 @@ Resources:
   ############################################################################
   # Lambda functions
   ############################################################################
-
-  LookoutEndEvent:
-    DependsOn: LambdaRole
-    Type: AWS::Serverless::Function
-    Properties:
-      Description: process undetected faces on ended events
-      CodeUri: lambda
-      Handler: LookoutEndEvent.main.handler
-      Runtime: python3.6
-      Timeout: 30
-      MemorySize: 512
-      Role: !GetAtt LambdaRole.Arn
-      Environment:
-        Variables:
-          FACES_TABLE: !Ref LookoutFacesTable
-          NOTIFY_TABLE: !Ref LookoutNotifyTable
-          S3_BUCKET: !Ref S3Bucket
-          REK_COLLECTION: !Ref RekImageCollection
-          IOT_NOTIFY_TOPIC: !Ref IotNotifyTopic
 
   LookoutEvent:
     DependsOn: LambdaRole
@@ -183,31 +160,12 @@ Resources:
         RuleDisabled: False
         Sql: !Sub "SELECT * FROM '${IotEventTopic}'"
 
-  IotEventToLambda2:
-    Type: "AWS::IoT::TopicRule"
-    Properties:
-      TopicRulePayload:
-        Actions:
-          -
-            Lambda:
-              FunctionArn: !GetAtt LookoutEndEvent.Arn
-        Description: "signal event end to lambda"
-        RuleDisabled: False
-        Sql: !Sub "SELECT * FROM '${IotEventEndTopic}'"
-
   # create permissions to allow lambda invocation
   IotToLambaPerm1:
     Type: "AWS::Lambda::Permission"
     Properties:
       Action: 'lambda:InvokeFunction'
       FunctionName: !Ref LookoutEvent
-      Principal: 'iot.amazonaws.com'
-
-  IotToLambaPerm2:
-    Type: "AWS::Lambda::Permission"
-    Properties:
-      Action: 'lambda:InvokeFunction'
-      FunctionName: !Ref LookoutEndEvent
       Principal: 'iot.amazonaws.com'
 
 
@@ -296,7 +254,6 @@ Resources:
             Resource:
               - !Sub "arn:aws:iot:${AWS::Region}:${AWS::AccountId}:topic/${IotNotifyTopic}"
               - !Sub "arn:aws:iot:${AWS::Region}:${AWS::AccountId}:topic/${IotEventTopic}"
-              - !Sub "arn:aws:iot:${AWS::Region}:${AWS::AccountId}:topic/${IotEventEndTopic}"
 
 Outputs:
   S3BucketName:
@@ -314,15 +271,9 @@ Outputs:
   EventTopic:
     Value: !Ref IotEventTopic
     Description: Topic to susbscribe to for motion events
-  EventEndTopic:
-    Value: !Ref IotEventEndTopic
-    Description: Topic to susbscribe to for motion events
   RekCollection:
     Value: !Ref RekImageCollection
     Description: The rekognition collection name used for searching and indexing faces
-  EndEventLambda:
-    Value: !Ref LookoutEndEvent
-    Description: The lambda invoked at the end of a motion event
   EventLambda:
     Value: !Ref LookoutEvent
     Description: The lambda invoked for each moving object during a motion event

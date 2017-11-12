@@ -34,6 +34,8 @@ def handler(event, context):
         key = f['Key']
         if key.endswith(".jpg"):
             name = key.split("/")[-1][:-4]
+            if "_" in name:
+                name = name.split("_")[0]
             imgsToIndex.append({"name": name, "key": key})
 
     # index each image
