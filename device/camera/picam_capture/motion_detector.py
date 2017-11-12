@@ -85,6 +85,10 @@ class MotionDetector:
         else:
             motion_ended = self.ms.processNonMotionFrame()
 
+    def end_session(self):
+        msg = self.getEndMsg(self.ms.sessionName)
+        self.out_queue.put(msg)
+
     def push_img(self, img, originalSize, contour, direction):
             msg = self.getPushImgMsg(
                 img,
@@ -100,6 +104,14 @@ class MotionDetector:
     def push_test_img(self, img):
         msg = self.getPushImgMsg(img, "t-{0}".format(str(uuid.uuid4())[:8]), "1", { 'direction': 'S', 'dx': 10, 'dy': 50}, img.shape, self.getBoundingJson(None), 1)
         self.out_queue.put(msg)
+
+    def getEndMsg(self, session):
+        return {
+            "end": 1,
+            "event": {
+                "eventId": session
+            }
+        }
 
     def getPushImgMsg(self, img, session, sequence, direction, originalSize, originalBoundingBox, motionContourArea):
         return {

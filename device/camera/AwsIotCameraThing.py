@@ -16,11 +16,12 @@ import uuid
 class AwsIotCameraThing:
     _logger = logging.getLogger(__name__)
 
-    def __init__(self, iotConfig, sendHelper, deviceTopic, eventTopic):
+    def __init__(self, iotConfig, sendHelper, deviceTopic, eventTopic, eventEndTopic):
         (self.mqShadowClient, self.mqClient) = self.createMqttClients(iotConfig)
         self.thingName = iotConfig["thingName"]
         self.deviceTopic = deviceTopic
         self.eventTopic = eventTopic
+        self.eventEndTopic = eventEndTopic
         self.sh = sendHelper
         self.stopped = False
         self.imageSendQueue = QueueWorker("image_send_queue", self.processImageSendQueue)
@@ -77,14 +78,14 @@ class AwsIotCameraThing:
         self.imageSendQueue.stopWorker()
 
     def processImageSendQueue(self, data):
-        (b,k) = self.sh.writeImage(data['imageName'], data['imageNp'])
-
-        #todo .. do something with msg
-        data["event"]["s3Bucket"] = b
-        data["event"]["s3Key"] = k
-        data["event"]["thingName"] = self.thingName
-        self.mqClient.publish(self.eventTopic, json.dumps(data["event"]), 0)
-
+        if "end" not in data:
+            (b,k) = self.sh.writeImage(data['imageName'], data['imageNp'])
+            data["event"]["s3Bucket"] = b
+            data["event"]["s3Key"] = k
+            data["event"]["thingName"] = self.thingName
+            self.mqClient.publish(self.eventTopic, json.dumps(data["event"]), 0)
+        else:
+            self.mqClient.publish(self.eventEndTopic, json.dumps(data["event"]), 0)
 
     def mqttSubscribeHandler(self, client, userdata, message):
         self._logger.debug("queueing mqtt message received from topic {}".format(message.topic))

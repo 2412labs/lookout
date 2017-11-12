@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO, format='[%(levelname)s] [%(name)s] [%(me
 logger = logging.getLogger(__name__)
 
 s3 = S3Helper(conf["s3Bucket"], "images", region=conf["iotConfig"]["region"])
-thing = AwsIotCameraThing(conf["iotConfig"], s3, conf["deviceTopic"], conf["eventTopic"])
+thing = AwsIotCameraThing(conf["iotConfig"], s3, conf["deviceTopic"], conf["eventTopic"], conf["eventEndTopic"])
 
 try:
     # this call is blocking
