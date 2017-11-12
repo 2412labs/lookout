@@ -22,6 +22,8 @@ lh = LookoutHelper(bh, FACES_TABLE, NOTIFY_TABLE)
 def handler(event, context):
     print("indexing faces from {}/{}".format(S3_BUCKET, S3_FACE_PATH))
 
+    lh.createCollectionIfNotExists(REK_COLLECTION)
+
     #get known faces from s3 path
     result = bh.s3.list_objects(
         Bucket=S3_BUCKET,
@@ -58,6 +60,7 @@ def handler(event, context):
             print("updated dynamo record for {}".format(f['Face']['FaceId']))
 
     return imgsToIndex
+
 
 def buildDynamoFacesItem(faceId, s3Bucket, s3Key, name):
     return {

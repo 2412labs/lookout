@@ -107,6 +107,11 @@ class LookoutHelper:
 			}
 		)['FaceRecords']
 
+	def createCollectionIfNotExists(self, collectionId):
+		response = self.bh.rekognition.list_collections()
+		if collectionId not in response['CollectionIds']:
+			self.rekCreateCollection(collectionId)
+			
 	def rekCreateCollection(self, collectionId):
 		response = self.bh.rekognition.create_collection(
 			CollectionId=collectionId
