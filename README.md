@@ -29,17 +29,17 @@ make release
     * An AWS IoT thing (for the camera)
     * Certs for the AWS IoT thing
     * aws credentials in ~/.aws
-1.  Get the code:
+2.  Get the code:
 ```bash
 git clone https://github.com/2412labs/lookout.git
 cd lookout/device/camera
 sudo python3 setup.py install
 ```
-1.  Configure the example code - add your values to conf.json:
+3.  Configure the example code - add your values to conf.json:
 ```bash
 cd lookout/device/camera/example
 cp -r YOUR_THING_CERTS/ certs/
 cp conf_example.json conf.json
 vi conf.json
 ```
-1.  Run `python3 -u cameraThingExample.py -c conf.json`
+4.  Run `python3 -u cameraThingExample.py -c conf.json`
