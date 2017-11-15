@@ -2,7 +2,7 @@
 
 Lookout is an intelligent camera based on a Raspberry Pi (with camera module) and AWS.
 
-Detailed information and configuration steps can be found on the 2412labs blog at https://2412labs.com/lookout/aws/raspi/2017/10/23/lookout-smart-aws-camera-part1-intro.html.
+A detailed blog series can be found on the 2412labs blog at https://2412labs.com/lookout/aws/raspi/2017/10/23/lookout-smart-aws-camera-part1-intro.html.
 
 # TL;DR - install aws stack:
 
@@ -29,16 +29,17 @@ make release
     * An AWS IoT thing (for the camera)
     * Certs for the AWS IoT thing
     * aws credentials in ~/.aws
-2.  Get the code:
+1.  Get the code:
 ```bash
 git clone https://github.com/2412labs/lookout.git
 cd lookout/device/camera
 sudo python3 setup.py install
 ```
-3.  Configure the example code - add your values to conf.json:
+1.  Configure the example code - add your values to conf.json:
 ```bash
 cd lookout/device/camera/example
+cp -r YOUR_THING_CERTS/ certs/
 cp conf_example.json conf.json
 vi conf.json
 ```
-4.  Run `python3 -u cameraThingExample.py -c conf.json`
+1.  Run `python3 -u cameraThingExample.py -c conf.json`
