@@ -119,7 +119,7 @@ Resources:
           -
             ExpirationInDays: 1
             Id: "expire images after 1 day"
-            Prefix: "images/"
+            Prefix: "event_data/"
             Status: "Enabled"
       VersioningConfiguration:
         Status: "Suspended"
