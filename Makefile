@@ -60,3 +60,4 @@ index:
 
 release:
 	@make package deploy outputs testdata index
+
