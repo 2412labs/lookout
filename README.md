@@ -1,6 +1,5 @@
 # Lookout
 
-
 Lookout is an intelligent camera based on a Raspberry Pi (with camera module) and AWS.
 
 A detailed blog series can be found on the 2412labs blog at https://2412labs.io/lookout/aws/raspi/2017/10/23/lookout-smart-aws-camera-part1-intro.html.
