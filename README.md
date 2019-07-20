@@ -43,5 +43,3 @@ cp conf_example.json conf.json
 vi conf.json
 ```
 4.  Run `python3 -u cameraThingExample.py -c conf.json`
-
-
